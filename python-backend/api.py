@@ -181,7 +181,18 @@ async def chat_endpoint(req: ChatRequest):
             )
     else:
         conversation_id = req.conversation_id  # type: ignore
-        state = conversation_store.get(conversation_id)
+        retrieved_state = conversation_store.get(conversation_id)
+        if retrieved_state is None:
+            # Handle case where conversation was not found, treat as new conversation
+            ctx = create_initial_context()
+            current_agent_name = triage_agent.name
+            state = {
+                "input_items": [],
+                "context": ctx,
+                "current_agent": current_agent_name,
+            }
+        else:
+            state = retrieved_state
 
     current_agent = _get_agent_by_name(state["current_agent"])
     state["input_items"].append({"content": req.message, "role": "user"})
