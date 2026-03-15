@@ -1,4 +1,5 @@
 from __future__ import annotations as _annotations
+from agents.extensions.visualization import draw_graph
 
 import random
 from pydantic import BaseModel
@@ -301,10 +302,11 @@ triage_agent = Agent[AirlineAgentContext](
         "You are a helpful triaging agent. You can use your tools to delegate questions to other appropriate agents."
     ),
     handoffs=[
-        flight_status_agent,
-        handoff(agent=cancellation_agent, on_handoff=on_cancellation_handoff),
+        flight_status_agent,cancellation_agent,
+        # handoff(agent=cancellation_agent, on_handoff=on_cancellation_handoff),
         faq_agent,
-        handoff(agent=seat_booking_agent, on_handoff=on_seat_booking_handoff),
+        seat_booking_agent
+        # handoff(agent=seat_booking_agent, on_handoff=on_seat_booking_handoff),
     ],
     input_guardrails=[relevance_guardrail, jailbreak_guardrail],
 )
@@ -315,3 +317,4 @@ seat_booking_agent.handoffs.append(triage_agent)
 flight_status_agent.handoffs.append(triage_agent)
 # Add cancellation agent handoff back to triage
 cancellation_agent.handoffs.append(triage_agent)
+draw_graph(triage_agent, filename="agent_graph")
